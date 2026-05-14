@@ -1,0 +1,10 @@
+# Dependencias (Evita que se suban miles de archivos innecesarios)
+node_modules/
+
+# Variables de entorno (AQUÍ ES DONDE VAN TUS CONTRASEÑAS)
+.env
+.env.local
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
