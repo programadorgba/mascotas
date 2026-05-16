@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Camera, Save, X } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
 import { useAuth } from '../../../shared/context/AuthContext.jsx'
+import { normalizeChip } from '../../../shared/lib/chip.js'
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024
 const PHOTO_BUCKET = 'pet-photos'
@@ -79,6 +80,7 @@ export default function PetForm() {
     event.preventDefault()
     setSaving(true)
     setError('')
+    const normalizedChip = normalizeChip(form.chip_number)
 
     try {
       const { data, error: insertError } = await supabase
@@ -88,7 +90,7 @@ export default function PetForm() {
           name: form.name.trim(),
           animal_type: form.animal_type,
           breed: form.breed.trim() || null,
-          chip_number: form.chip_number.trim() || null,
+          chip_number: normalizedChip || null,
           insurance_company: form.insurance_company.trim() || null,
           policy_number: form.policy_number.trim() || null,
           birth_date: form.birth_date || null,
@@ -159,7 +161,7 @@ export default function PetForm() {
           </select>
         </label>
         <label>Raza<input value={form.breed} onChange={(e) => setField('breed', e.target.value)} /></label>
-        <label>N chip<input value={form.chip_number} onChange={(e) => setField('chip_number', e.target.value)} maxLength={32} /></label>
+        <label>N chip<input value={form.chip_number} onChange={(e) => setField('chip_number', e.target.value)} inputMode="numeric" maxLength={32} /></label>
         <label>Compania de seguro<input value={form.insurance_company} onChange={(e) => setField('insurance_company', e.target.value)} /></label>
         <label>N poliza<input value={form.policy_number} onChange={(e) => setField('policy_number', e.target.value)} /></label>
         <label>Dia de nacimiento<input type="date" value={form.birth_date} onChange={(e) => setField('birth_date', e.target.value)} /></label>

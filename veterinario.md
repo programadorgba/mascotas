@@ -25,20 +25,22 @@ Primero se registra. Después tú decides si ese usuario es veterinario autoriza
 
   Buscas el usuario vet@clinica.com y copias su User UID.
 
-  Después vas a SQL Editor y ejecutas:
+  Después vas a SQL Editor y ejecutas solo este bloque, cambiando el `id` por el User UID real:
 
-  insert into public.vet_profiles (
-    id,
-    license_number,
-    clinic_name,
-    verified
-  )
-  values (
-    '6b83d5c2-7a4f-4d90-91a1-bef25b4d12c7',
-    'COL-12345',
-    'Clinica Veterinaria San Anton',
-    true
-  );
+```sql
+insert into public.vet_profiles (
+  id,
+  license_number,
+  clinic_name,
+  verified
+)
+values (
+  '6b83d5c2-7a4f-4d90-91a1-bef25b4d12c7',
+  'COL-12345',
+  'Clinica Veterinaria San Anton',
+  true
+);
+```
 
   3. Qué significa eso
 

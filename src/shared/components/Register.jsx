@@ -3,6 +3,30 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, HeartPulse } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient.js'
 
+function getRegisterErrorMessage(authError) {
+  const message = authError?.message || ''
+  const code = authError?.code || ''
+  const text = `${code} ${message}`.toLowerCase()
+
+  if (text.includes('user_already_exists') || text.includes('already registered') || text.includes('already exists')) {
+    return 'Este email ya esta registrado. Entra desde login o usa otro email.'
+  }
+
+  if (text.includes('weak_password') || text.includes('password')) {
+    return 'La contrasena no cumple los requisitos de Supabase. Usa al menos 8 caracteres con una mezcla de letras y numeros.'
+  }
+
+  if (text.includes('invalid_email') || text.includes('email')) {
+    return 'El email no es valido. Revisa que este escrito correctamente.'
+  }
+
+  if (text.includes('signup') && text.includes('disabled')) {
+    return 'El registro esta deshabilitado en Supabase Auth. Activalo en Authentication > Providers > Email.'
+  }
+
+  return message || 'No se pudo crear la cuenta. Revisa los datos e intentalo de nuevo.'
+}
+
 export default function Register() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ full_name: '', email: '', password: '', confirmPassword: '' })
@@ -16,6 +40,15 @@ export default function Register() {
     setLoading(true)
     setError('')
 
+    const email = form.email.trim().toLowerCase()
+    const fullName = form.full_name.trim()
+
+    if (!fullName) {
+      setError('Escribe tu nombre completo.')
+      setLoading(false)
+      return
+    }
+
     if (form.password !== form.confirmPassword) {
       setError('Las contrasenas no coinciden.')
       setLoading(false)
@@ -24,18 +57,19 @@ export default function Register() {
 
     try {
       const { error: authError } = await supabase.auth.signUp({
-        email: form.email,
+        email,
         password: form.password,
         options: {
           data: {
-            full_name: form.full_name,
+            full_name: fullName,
             role: 'owner',
           },
         },
       })
 
       if (authError) {
-        setError(authError.message)
+        console.warn('Supabase signup error:', authError)
+        setError(getRegisterErrorMessage(authError))
         return
       }
 

@@ -141,7 +141,6 @@ on public.pets for select
 to authenticated
 using (
   public.is_verified_vet()
-  and public.has_strong_auth()
   and chip_number is not null
 );
 
@@ -163,7 +162,6 @@ on public.medical_records for select
 to authenticated
 using (
   public.is_verified_vet()
-  and public.has_strong_auth()
 );
 
 drop policy if exists "medical_records_verified_vet_insert" on public.medical_records;
@@ -172,7 +170,6 @@ on public.medical_records for insert
 to authenticated
 with check (
   public.is_verified_vet()
-  and public.has_strong_auth()
   and vet_id = auth.uid()
   and exists (
     select 1 from public.pets

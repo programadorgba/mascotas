@@ -5,6 +5,26 @@ import { supabase } from '../lib/supabaseClient.js'
 
 const REMEMBER_EMAIL_KEY = 'petcare-remember-email'
 
+function getLoginErrorMessage(authError) {
+  const message = authError?.message || ''
+  const code = authError?.code || ''
+  const text = `${code} ${message}`.toLowerCase()
+
+  if (text.includes('email_not_confirmed') || text.includes('email not confirmed')) {
+    return 'Debes confirmar el email antes de entrar. Revisa tu correo o desactiva la confirmacion en Supabase Auth.'
+  }
+
+  if (text.includes('email logins are disabled')) {
+    return 'El login por email esta desactivado en Supabase. Activa Email en Authentication > Providers.'
+  }
+
+  if (text.includes('invalid_credentials') || text.includes('invalid login credentials')) {
+    return 'Email o contrasena incorrectos. Usa el mismo email con el que se creo la cuenta.'
+  }
+
+  return message || 'No se pudo iniciar sesion. Revisa los datos e intentalo de nuevo.'
+}
+
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -19,17 +39,22 @@ export default function Login() {
     event.preventDefault()
     setLoading(true)
     setError('')
+    const email = form.email.trim().toLowerCase()
 
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword(form)
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password: form.password,
+      })
 
       if (authError) {
-        setError('Email o contrasena incorrectos.')
+        console.warn('Supabase login error:', authError)
+        setError(getLoginErrorMessage(authError))
         return
       }
 
       if (rememberMe) {
-        localStorage.setItem(REMEMBER_EMAIL_KEY, form.email)
+        localStorage.setItem(REMEMBER_EMAIL_KEY, email)
       } else {
         localStorage.removeItem(REMEMBER_EMAIL_KEY)
       }

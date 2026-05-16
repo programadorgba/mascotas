@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Microchip, Search, Stethoscope } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
+import { normalizeChip } from '../../../shared/lib/chip.js'
 
 export default function VetSearch() {
   const [chip, setChip] = useState('')
@@ -14,11 +15,18 @@ export default function VetSearch() {
     setLoading(true)
     setError('')
     setPet(null)
+    const normalizedChip = normalizeChip(chip)
+
+    if (!normalizedChip) {
+      setLoading(false)
+      setError('Introduce un numero de chip valido.')
+      return
+    }
 
     const { data, error: searchError } = await supabase
       .from('pets')
       .select('id, name, animal_type, breed, chip_number, birth_date, photo_url')
-      .eq('chip_number', chip.trim())
+      .eq('chip_number', normalizedChip)
       .maybeSingle()
 
     setLoading(false)
@@ -51,7 +59,7 @@ export default function VetSearch() {
           Numero de chip
           <div className="input-with-icon">
             <Microchip size={18} />
-            <input value={chip} onChange={(e) => setChip(e.target.value)} required placeholder="Ej. 985123456789012" />
+            <input value={chip} onChange={(e) => setChip(e.target.value)} required inputMode="numeric" placeholder="Ej. 985123456789012" />
           </div>
         </label>
         <button className="primary-button" disabled={loading}><Search size={18} /> {loading ? 'Buscando...' : 'Buscar'}</button>

@@ -15,8 +15,13 @@ export function AppShell({ area }) {
   }, [isDark])
 
   async function handleSignOut() {
-    await signOut()
-    navigate('/login', { replace: true })
+    try {
+      await signOut()
+    } catch (error) {
+      console.warn('Supabase sign out error:', error)
+    } finally {
+      navigate('/login', { replace: true })
+    }
   }
 
   async function handleDeleteAccount() {

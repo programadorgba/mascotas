@@ -2,12 +2,25 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 const AuthContext = createContext(null)
+const AUTH_TIMEOUT_MS = 6000
+
+function withTimeout(promise, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      window.setTimeout(() => reject(new Error(`${label} timeout`)), AUTH_TIMEOUT_MS)
+    }),
+  ])
+}
 
 async function loadProfile(userId) {
-  const [{ data: profile }, { data: vetProfile }] = await Promise.all([
+  const [{ data: profile, error: profileError }, { data: vetProfile, error: vetProfileError }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
     supabase.from('vet_profiles').select('*').eq('id', userId).maybeSingle(),
   ])
+
+  if (profileError) throw profileError
+  if (vetProfileError) throw vetProfileError
 
   return {
     profile,
@@ -26,37 +39,68 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let active = true
 
-    async function init() {
-      const { data } = await supabase.auth.getSession()
-      if (!active) return
-      setSession(data.session)
+    function clearAuthState() {
+      setSession(null)
+      setProfile(null)
+      setVetProfile(null)
+      setRole('owner')
+    }
 
-      if (data.session?.user) {
-        const loaded = await loadProfile(data.session.user.id)
+    async function applySession(nextSession) {
+      if (!active) return
+      setSession(nextSession)
+      setProfile(null)
+      setVetProfile(null)
+      setRole('owner')
+
+      if (!nextSession?.user) {
+        return
+      }
+
+      try {
+        const loaded = await withTimeout(loadProfile(nextSession.user.id), 'profile load')
         if (!active) return
         setProfile(loaded.profile)
         setVetProfile(loaded.vetProfile)
         setRole(loaded.role)
-      }
-
-      setLoading(false)
-    }
-
-    init()
-
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-      setSession(nextSession)
-      if (nextSession?.user) {
-        const loaded = await loadProfile(nextSession.user.id)
-        setProfile(loaded.profile)
-        setVetProfile(loaded.vetProfile)
-        setRole(loaded.role)
-      } else {
+      } catch (error) {
+        console.warn('Supabase profile load error:', error)
+        if (!active) return
         setProfile(null)
         setVetProfile(null)
         setRole('owner')
       }
-      setLoading(false)
+    }
+
+    async function init() {
+      try {
+        const { data, error } = await withTimeout(supabase.auth.getSession(), 'session init')
+        if (error) throw error
+        await applySession(data.session)
+      } catch (error) {
+        console.warn('Supabase session init error:', error)
+        if (!active) return
+        clearAuthState()
+        await supabase.auth.signOut({ scope: 'local' }).catch((signOutError) => {
+          console.warn('Supabase local sign out error:', signOutError)
+        })
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    init()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      window.setTimeout(() => {
+        applySession(nextSession)
+          .catch((error) => {
+            console.warn('Supabase auth state error:', error)
+          })
+          .finally(() => {
+            if (active) setLoading(false)
+          })
+      }, 0)
     })
 
     return () => {
@@ -74,7 +118,14 @@ export function AuthProvider({ children }) {
     loading,
     isOwner: role === 'owner',
     isVet: role === 'vet',
-    signOut: () => supabase.auth.signOut(),
+    signOut: async () => {
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
+      setSession(null)
+      setProfile(null)
+      setVetProfile(null)
+      setRole('owner')
+      if (error) throw error
+    },
     deleteAccount: async () => {
       const { error } = await supabase.rpc('delete_current_user')
       if (error) throw error
