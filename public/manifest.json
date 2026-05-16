@@ -1,0 +1,21 @@
+{
+  "name": "PetCare - Cuidado Integral para tu Mascota",
+  "short_name": "PetCare",
+  "description": "Plataforma profesional para el cuidado y bienestar de tu mascota. Gestión de citas veterinarias, historial médico y seguimiento de salud.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef5f1",
+  "theme_color": "#eef5f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "lifestyle"],
+  "lang": "es",
+  "author": "ProgramadorGBA"
+}

@@ -545,6 +545,13 @@ textarea:focus {
 
 .photo-upload-hero .photo-upload-box img {
   height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 820px) {
+  .photo-upload-hero .photo-upload-box img {
+    object-fit: contain;
+  }
 }
 
 .photo-placeholder {
@@ -734,6 +741,17 @@ textarea:focus {
   .pet-grid-two,
   .pet-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .photo-upload-hero .photo-upload-box {
+    min-height: 200px;
+  }
+
+  .photo-upload-box img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
   }
 
   .pet-card {
