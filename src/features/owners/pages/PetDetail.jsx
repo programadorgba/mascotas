@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Activity, Bug, FileText, FlaskConical, Pill, Ruler, Scale, Scissors, ShieldPlus, Stethoscope, Trash2 } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
+import { createPetPhotoSignedUrl } from '../../../shared/lib/petPhotos.js'
 
 const MEDICAL_TABS = [
   { id: 'overview', label: 'Resumen', icon: Activity, types: [] },
@@ -31,7 +32,12 @@ export default function PetDetail() {
         supabase.from('pets').select('*').eq('id', petId).single(),
         supabase.from('medical_records').select('*').eq('pet_id', petId).order('recorded_at', { ascending: false }),
       ])
-      setPet(petData)
+      setPet(petData
+        ? {
+            ...petData,
+            photoSignedUrl: await createPetPhotoSignedUrl(petData.photo_url),
+          }
+        : null)
       setRecords(recordData || [])
       setLoading(false)
     }
@@ -66,7 +72,7 @@ export default function PetDetail() {
     <main className="page">
       <header className="pet-profile">
         <div className="pet-photo large">
-          {pet.photo_url ? <img src={pet.photo_url} alt={pet.name} /> : <Stethoscope size={44} />}
+          {pet.photoSignedUrl ? <img src={pet.photoSignedUrl} alt={pet.name} /> : <Stethoscope size={44} />}
         </div>
         <div>
           <span className="eyebrow">{pet.animal_type}</span>

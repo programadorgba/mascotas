@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Microchip, Search, Stethoscope } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
 import { normalizeChip } from '../../../shared/lib/chip.js'
+import { createPetPhotoSignedUrl } from '../../../shared/lib/petPhotos.js'
 
 export default function VetSearch() {
   const [chip, setChip] = useState('')
@@ -29,19 +30,23 @@ export default function VetSearch() {
       .eq('chip_number', normalizedChip)
       .maybeSingle()
 
-    setLoading(false)
-
     if (searchError) {
+      setLoading(false)
       setError(searchError.message)
       return
     }
 
     if (!data) {
+      setLoading(false)
       setError('No se ha encontrado ninguna mascota con ese chip.')
       return
     }
 
-    setPet(data)
+    setPet({
+      ...data,
+      photoSignedUrl: await createPetPhotoSignedUrl(data.photo_url),
+    })
+    setLoading(false)
   }
 
   return (
@@ -70,7 +75,7 @@ export default function VetSearch() {
       {pet ? (
         <article className="pet-card result-card">
           <div className="pet-photo">
-            {pet.photo_url ? <img src={pet.photo_url} alt={pet.name} /> : <Stethoscope size={32} />}
+            {pet.photoSignedUrl ? <img src={pet.photoSignedUrl} alt={pet.name} /> : <Stethoscope size={32} />}
           </div>
           <div>
             <h2>{pet.name}</h2>

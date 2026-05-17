@@ -4,9 +4,9 @@ import { Camera, Save, X } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
 import { useAuth } from '../../../shared/context/AuthContext.jsx'
 import { normalizeChip } from '../../../shared/lib/chip.js'
+import { PET_PHOTOS_BUCKET } from '../../../shared/lib/petPhotos.js'
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024
-const PHOTO_BUCKET = 'pet-photos'
 
 const initialForm = {
   name: '',
@@ -63,7 +63,7 @@ export default function PetForm() {
     const filePath = `${user.id}/${petId}.${extension}`
 
     const { error: uploadError } = await supabase.storage
-      .from(PHOTO_BUCKET)
+      .from(PET_PHOTOS_BUCKET)
       .upload(filePath, photoFile, {
         cacheControl: '3600',
         contentType: photoFile.type,
@@ -72,8 +72,7 @@ export default function PetForm() {
 
     if (uploadError) throw uploadError
 
-    const { data } = supabase.storage.from(PHOTO_BUCKET).getPublicUrl(filePath)
-    return data.publicUrl
+    return filePath
   }
 
   async function handleSubmit(event) {
@@ -100,11 +99,11 @@ export default function PetForm() {
 
       if (insertError) throw insertError
 
-      const photoUrl = await uploadPetPhoto(data.id)
-      if (photoUrl) {
+      const photoPath = await uploadPetPhoto(data.id)
+      if (photoPath) {
         const { error: updateError } = await supabase
           .from('pets')
-          .update({ photo_url: photoUrl })
+          .update({ photo_url: photoPath })
           .eq('id', data.id)
 
         if (updateError) throw updateError

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { CalendarDays, Microchip, PawPrint, Plus } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
 import { useAuth } from '../../../shared/context/AuthContext.jsx'
+import { addPetPhotoSignedUrls } from '../../../shared/lib/petPhotos.js'
 
 export default function OwnerDashboard() {
   const { user } = useAuth()
@@ -17,7 +18,7 @@ export default function OwnerDashboard() {
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
 
-      setPets(data || [])
+      setPets(await addPetPhotoSignedUrls(data))
       setLoading(false)
     }
 
@@ -50,7 +51,7 @@ export default function OwnerDashboard() {
         {pets.map((pet) => (
           <Link className="pet-card" key={pet.id} to={`/mascotas/${pet.id}`}>
             <div className="pet-photo">
-              {pet.photo_url ? <img src={pet.photo_url} alt={pet.name} /> : <PawPrint size={32} />}
+              {pet.photoSignedUrl ? <img src={pet.photoSignedUrl} alt={pet.name} /> : <PawPrint size={32} />}
             </div>
             <div>
               <h2>{pet.name}</h2>

@@ -187,7 +187,7 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values (
   'pet-photos',
   'pet-photos',
-  true,
+  false,
   5242880,
   array['image/jpeg', 'image/png', 'image/webp']
 )
@@ -203,7 +203,16 @@ on storage.objects for select
 to authenticated
 using (
   bucket_id = 'pet-photos'
-  and owner_id = auth.uid()::text
+  and (storage.foldername(name))[1] = auth.uid()::text
+);
+
+drop policy if exists "pet_photos_verified_vet_read" on storage.objects;
+create policy "pet_photos_verified_vet_read"
+on storage.objects for select
+to authenticated
+using (
+  bucket_id = 'pet-photos'
+  and public.is_verified_vet()
 );
 
 drop policy if exists "pet_photos_owner_insert" on storage.objects;

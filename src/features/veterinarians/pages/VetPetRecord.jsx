@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { FileText, Ruler, Save, Scale, Stethoscope } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
 import { useAuth } from '../../../shared/context/AuthContext.jsx'
+import { createPetPhotoSignedUrl } from '../../../shared/lib/petPhotos.js'
 
 const initialForm = {
   record_type: 'Consulta',
@@ -27,7 +28,12 @@ export default function VetPetRecord() {
       supabase.from('medical_records').select('*').eq('pet_id', petId).order('recorded_at', { ascending: false }),
     ])
 
-    setPet(petData)
+    setPet(petData
+      ? {
+          ...petData,
+          photoSignedUrl: await createPetPhotoSignedUrl(petData.photo_url),
+        }
+      : null)
     setRecords(recordData || [])
   }
 
@@ -71,7 +77,7 @@ export default function VetPetRecord() {
     <main className="page">
       <header className="pet-profile">
         <div className="pet-photo large">
-          {pet.photo_url ? <img src={pet.photo_url} alt={pet.name} /> : <Stethoscope size={44} />}
+          {pet.photoSignedUrl ? <img src={pet.photoSignedUrl} alt={pet.name} /> : <Stethoscope size={44} />}
         </div>
         <div>
           <span className="eyebrow">Ficha clinica</span>
