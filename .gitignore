@@ -4,6 +4,7 @@ node_modules/
 # Variables de entorno (AQUÍ ES DONDE VAN TUS CONTRASEÑAS)
 .env
 .env.local
+.env*
 
 # Archivos del sistema
 .DS_Store
