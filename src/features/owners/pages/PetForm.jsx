@@ -1,21 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Camera, Save, X } from 'lucide-react'
 import { supabase } from '../../../shared/lib/supabaseClient.js'
 import { useAuth } from '../../../shared/context/AuthContext.jsx'
 import { normalizeChip } from '../../../shared/lib/chip.js'
 import { PET_PHOTOS_BUCKET } from '../../../shared/lib/petPhotos.js'
+import { PASTEL_COLORS } from '../../reminders/constants.js'
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024
 
 const initialForm = {
   name: '',
   animal_type: 'Perro',
+  sex: 'No especificado',
   breed: '',
   chip_number: '',
   insurance_company: '',
   policy_number: '',
   birth_date: '',
+  color: '',
+  allergies: '',
 }
 
 export default function PetForm() {
@@ -26,6 +30,13 @@ export default function PetForm() {
   const [photoPreview, setPhotoPreview] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // ✅ FIX 2: cleanup del object URL al desmontar o cambiar preview
+  useEffect(() => {
+    return () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview)
+    }
+  }, [photoPreview])
 
   function setField(field, value) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -52,7 +63,7 @@ export default function PetForm() {
 
   function clearPhoto() {
     setPhotoFile(null)
-    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    // El useEffect se encarga de revocar la URL al cambiar photoPreview
     setPhotoPreview('')
   }
 
@@ -82,17 +93,24 @@ export default function PetForm() {
     const normalizedChip = normalizeChip(form.chip_number)
 
     try {
+      // Remove automatic color generation to allow user input
+      // If user leaves color empty, we default to #0000B8 or a standard fallback
+      const finalColor = form.color.trim() || '#0000B8'
+
       const { data, error: insertError } = await supabase
         .from('pets')
         .insert({
           owner_id: user.id,
           name: form.name.trim(),
           animal_type: form.animal_type,
+          sex: form.sex,                                    // ✅ ya estaba, pero ahora la columna existe
           breed: form.breed.trim() || null,
           chip_number: normalizedChip || null,
           insurance_company: form.insurance_company.trim() || null,
           policy_number: form.policy_number.trim() || null,
           birth_date: form.birth_date || null,
+          color: finalColor,
+          allergies: form.allergies.trim() || null,
         })
         .select('id')
         .single()
@@ -159,11 +177,20 @@ export default function PetForm() {
             <option>Otro</option>
           </select>
         </label>
+        <label>Sexo
+          <select value={form.sex} onChange={(e) => setField('sex', e.target.value)}>
+            <option value="Macho">Macho</option>
+            <option value="Hembra">Hembra</option>
+            <option value="No especificado">No especificado</option>
+          </select>
+        </label>
         <label>Raza<input value={form.breed} onChange={(e) => setField('breed', e.target.value)} /></label>
+        <label>Color (Ej. Negro, Blanco, Marrón, Gris)<input value={form.color} onChange={(e) => setField('color', e.target.value)} placeholder="Opcional" /></label>
+        <label>Dia de nacimiento<input type="date" value={form.birth_date} onChange={(e) => setField('birth_date', e.target.value)} /></label>
         <label>N chip<input value={form.chip_number} onChange={(e) => setField('chip_number', e.target.value)} inputMode="numeric" maxLength={32} /></label>
         <label>Compania de seguro<input value={form.insurance_company} onChange={(e) => setField('insurance_company', e.target.value)} /></label>
         <label>N poliza<input value={form.policy_number} onChange={(e) => setField('policy_number', e.target.value)} /></label>
-        <label>Dia de nacimiento<input type="date" value={form.birth_date} onChange={(e) => setField('birth_date', e.target.value)} /></label>
+        <label className="full-span">Alergias conocidas<input value={form.allergies} onChange={(e) => setField('allergies', e.target.value)} placeholder="Ej. Penicilina (Opcional)" /></label>
 
         {error && <p className="form-error full-span">{error}</p>}
 

@@ -15,6 +15,10 @@ vi.mock("../shared/lib/petPhotos.js", () => ({
   ),
 }));
 
+vi.mock("../shared/lib/diagnosticImaging.js", () => ({
+  addDiagnosticImageSignedUrls: vi.fn((records) => Promise.resolve(records || [])),
+}));
+
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
@@ -27,6 +31,7 @@ const petMock = {
   id: "pet-123",
   name: "Rex",
   animal_type: "Perro",
+  sex: "Macho",
   breed: "Labrador",
   chip_number: "123456789",
   birth_date: "2020-01-01",
@@ -70,6 +75,15 @@ function mockSupabase(pet = petMock, records = recordsMock) {
         })),
       }
     }
+    if (table === 'imaging_records') {
+      return {
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            order: vi.fn().mockResolvedValue({ data: [] }),
+          })),
+        })),
+      }
+    }
     return {
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
@@ -102,6 +116,7 @@ describe("PetDetail — ficha de mascota", () => {
     await waitFor(() => {
       expect(screen.getByText("Rex")).toBeInTheDocument();
       expect(screen.getByText("Perro")).toBeInTheDocument();
+      expect(screen.getAllByText("Macho").length).toBeGreaterThan(0);
       expect(screen.getByText(/labrador/i)).toBeInTheDocument();
     });
   });
@@ -122,8 +137,6 @@ it('muestra el ultimo peso y altura', async () => {
     renderPetDetail();
 
     await waitFor(() => screen.getByText("Rex"));
-    await waitFor(() => screen.getByText('Rex'))
-console.log(document.querySelector('.pet-summary-grid')?.innerHTML)
 
     fireEvent.click(screen.getByRole("button", { name: /analisis/i }));
     expect(

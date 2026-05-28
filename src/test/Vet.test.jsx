@@ -12,6 +12,10 @@ vi.mock('../shared/lib/supabaseClient.js', () => ({
 vi.mock('../shared/lib/petPhotos.js', () => ({
   createPetPhotoSignedUrl: vi.fn(() => Promise.resolve(null)),
 }))
+vi.mock('../shared/lib/diagnosticImaging.js', () => ({
+  DIAGNOSTIC_IMAGING_BUCKET: 'diagnostic-imaging',
+  addDiagnosticImageSignedUrls: vi.fn((records) => Promise.resolve(records || [])),
+}))
 vi.mock('../shared/lib/chip.js', () => ({
   normalizeChip: vi.fn((chip) => chip),
 }))
@@ -114,7 +118,7 @@ describe('VetPetRecord — registrar datos médicos', () => {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               single: vi.fn().mockResolvedValue({
-                data: { id: 'pet-123', name: 'Rex', animal_type: 'Perro', breed: 'Labrador', chip_number: '123', photo_url: null },
+                data: { id: 'pet-123', name: 'Rex', animal_type: 'Perro', sex: 'Macho', breed: 'Labrador', chip_number: '123', photo_url: null },
               }),
             })),
           })),
@@ -135,8 +139,12 @@ describe('VetPetRecord — registrar datos médicos', () => {
     mockSupabase()
     renderVetPetRecord()
     await waitFor(() => screen.getByText('Rex'))
-    expect(screen.getByLabelText(/tipo de registro/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/notas clinicas/i)).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: 'Consulta' })[0])
+    expect(screen.getAllByRole('button', { name: 'Consulta' }).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: 'Analisis' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/peso kg/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/altura cm/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/informe/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /guardar registro/i })).toBeInTheDocument()
   })
 
@@ -144,10 +152,11 @@ describe('VetPetRecord — registrar datos médicos', () => {
     mockSupabase()
     renderVetPetRecord()
     await waitFor(() => screen.getByText('Rex'))
-    fireEvent.change(screen.getByLabelText(/notas clinicas/i), { target: { value: 'Revision de rutina' } })
+    fireEvent.click(screen.getAllByRole('button', { name: 'Consulta' })[0])
+    fireEvent.change(screen.getByLabelText(/informe/i), { target: { value: 'Revision de rutina' } })
     fireEvent.submit(document.querySelector('form'))
     await waitFor(() => {
-      expect(screen.getByLabelText(/notas clinicas/i).value).toBe('')
+      expect(screen.getByLabelText(/informe/i).value).toBe('')
     })
   })
 
@@ -158,7 +167,7 @@ describe('VetPetRecord — registrar datos médicos', () => {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               single: vi.fn().mockResolvedValue({
-                data: { id: 'pet-123', name: 'Rex', animal_type: 'Perro', breed: null, chip_number: '123', photo_url: null },
+                data: { id: 'pet-123', name: 'Rex', animal_type: 'Perro', sex: 'Macho', breed: null, chip_number: '123', photo_url: null },
               }),
             })),
           })),
@@ -175,6 +184,7 @@ describe('VetPetRecord — registrar datos médicos', () => {
     })
     renderVetPetRecord()
     await waitFor(() => screen.getByText('Rex'))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Consulta' })[0])
     fireEvent.submit(document.querySelector('form'))
     await waitFor(() => {
       expect(screen.getByText(/error al insertar/i)).toBeInTheDocument()

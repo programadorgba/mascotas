@@ -61,6 +61,7 @@ describe('PetForm — crear mascota', () => {
     renderPetForm()
     expect(screen.getByLabelText('Nombre')).toBeInTheDocument()
     expect(screen.getByLabelText('Tipo de animal')).toBeInTheDocument()
+    expect(screen.getByLabelText('Sexo')).toBeInTheDocument()
     expect(screen.getByLabelText('Raza')).toBeInTheDocument()
     expect(screen.getByLabelText('N chip')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /guardar mascota/i })).toBeInTheDocument()
@@ -84,17 +85,17 @@ describe('PetForm — crear mascota', () => {
   })
 
   it('redirige a la ficha de la mascota al guardar correctamente', async () => {
-    const insertMock = vi.fn().mockResolvedValue({ data: { id: 'pet-456' }, error: null })
     supabase.from.mockReturnValue({
       insert: vi.fn(() => ({
         select: vi.fn(() => ({
-          single: insertMock,
+          single: vi.fn().mockResolvedValue({ data: { id: 'pet-456' }, error: null }),
         })),
       })),
     })
 
     renderPetForm()
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Rex' } })
+    fireEvent.change(screen.getByLabelText('Sexo'), { target: { value: 'Hembra' } })
     fireEvent.submit(document.querySelector('form'))
 
     await waitFor(() => {
@@ -103,14 +104,13 @@ describe('PetForm — crear mascota', () => {
   })
 
   it('muestra error si falla al guardar', async () => {
-    const insertMock = vi.fn().mockResolvedValue({
-      data: null,
-      error: { message: 'Error de base de datos' }
-    })
     supabase.from.mockReturnValue({
       insert: vi.fn(() => ({
         select: vi.fn(() => ({
-          single: insertMock,
+          single: vi.fn().mockResolvedValue({
+            data: null,
+            error: { message: 'Error de base de datos' },
+          }),
         })),
       })),
     })

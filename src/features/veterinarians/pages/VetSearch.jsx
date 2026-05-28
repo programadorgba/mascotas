@@ -26,7 +26,7 @@ export default function VetSearch() {
 
     const { data, error: searchError } = await supabase
       .from('pets')
-      .select('id, name, animal_type, breed, chip_number, birth_date, photo_url')
+      .select('id, name, animal_type, sex, breed, chip_number, birth_date, photo_url')
       .eq('chip_number', normalizedChip)
       .maybeSingle()
 
@@ -79,7 +79,7 @@ export default function VetSearch() {
           </div>
           <div>
             <h2>{pet.name}</h2>
-            <p>{pet.animal_type}{pet.breed ? ` · ${pet.breed}` : ''}</p>
+            <p>{pet.animal_type}{pet.sex ? ` · ${pet.sex}` : ''}{pet.breed ? ` · ${pet.breed}` : ''}</p>
             <span><Microchip size={14} /> {pet.chip_number}</span>
           </div>
           <Link className="primary-button" to={`/veterinario/mascotas/${pet.id}`}>Abrir historial</Link>
