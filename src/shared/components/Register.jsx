@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, HeartPulse } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient.js'
 
 function getRegisterErrorMessage(authError) {
@@ -100,7 +100,7 @@ export default function Register() {
     <main className="auth-page">
       <section className="auth-panel">
         <div className="auth-brand">
-          <div className="auth-logo"><HeartPulse size={30} /></div>
+          <div className="auth-logo"><img src="/android-chrome-192x192.png" alt="PetCare" width="48" height="48" /></div>
           <strong>PetCare</strong>
         </div>
         <h1>Registro</h1>
