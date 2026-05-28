@@ -681,6 +681,165 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.92);
 }
 
+.pet-detail-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pet-info-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(22, 47, 39, 0.07);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pet-info-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.pet-info-photo {
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--mint);
+  color: var(--teal-dark);
+}
+
+.pet-info-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pet-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pet-info-content .eyebrow {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pet-info-content h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.pet-breed {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.pet-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.info-value {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.pet-info-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.info-value {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pet-vitals-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(22, 47, 39, 0.07);
+  padding: 18px 22px;
+}
+
+.pet-vitals-card h3 {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.vital-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vital-item svg {
+  color: var(--teal-dark);
+  flex-shrink: 0;
+}
+
+.vital-item div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vital-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.vital-value {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.vital-item.allergies .vital-value {
+  color: var(--red);
+}
+
 .pet-profile {
   display: flex;
   align-items: center;
@@ -837,18 +996,37 @@ textarea:focus {
     padding: 24px;
   }
 
-  .page-header,
-  .pet-profile {
-    flex-direction: column;
-    align-items: flex-start;
+  .pet-info-card {
+    padding: 16px;
+    gap: 14px;
   }
 
-  .form-grid,
-  .chip-search,
-  .split-layout,
-  .result-card,
-  .pet-grid-two,
-  .pet-summary-grid {
+  .pet-info-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pet-info-photo {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+  }
+
+  .pet-info-content h1 {
+    font-size: 1.4rem;
+  }
+
+  .pet-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pet-info-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vitals-grid {
     grid-template-columns: 1fr;
   }
 
@@ -934,14 +1112,14 @@ textarea:focus {
 
 /* Celda de día */
 .calendar-day {
-  min-height: 64px;
+  min-height: 72px;
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 6px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 4px;
   transition: background 0.12s, border-color 0.12s;
 }
@@ -981,9 +1159,11 @@ textarea:focus {
 .day-dots {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
-  justify-content: flex-end;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
   width: 100%;
+  margin-top: 2px;
 }
 
 /* Leyenda mascotas */

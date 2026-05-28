@@ -37,8 +37,6 @@ function addDays(dateStr, days) {
 export function useCalendarEvents(month, year, petIds, refreshKey = 0) {
   const [events, setEvents] = useState([])
 
-  // ✅ FIX: serializar petIds a string para que React pueda compararlo entre renders
-  // Un array nuevo en cada render (aunque tenga los mismos ids) disparaba el effect infinitamente
   const petIdsKey = petIds?.join(',') ?? ''
 
   useEffect(() => {
@@ -47,7 +45,6 @@ export function useCalendarEvents(month, year, petIds, refreshKey = 0) {
       return
     }
 
-    // Reconstruir el array desde el string estable
     const petIdsArray = petIdsKey.split(',').filter(Boolean)
 
     async function load() {
@@ -55,22 +52,30 @@ export function useCalendarEvents(month, year, petIds, refreshKey = 0) {
       const lastDay   = new Date(year, month, 0).getDate()
       const endDate   = `${year}-${String(month).padStart(2, '0')}-${lastDay}`
 
-      const [medsResult, apptsResult] = await Promise.all([
+      const [medsResult, remindersResult, visitsResult] = await Promise.all([
         supabase
-          .from('medications')
+          .from('visit_medications')
           .select('id, pet_id, name, start_date, end_date, active, frequency, dosage')
+          .in('pet_id', petIdsArray)
+          .eq('active', true),
+        supabase
+          .from('reminders')
+          .select('id, pet_id, owner_id, type, title, notes, due_date, completed')
           .in('pet_id', petIdsArray),
         supabase
-          .from('appointments')
-          .select('id, pet_id, title, scheduled_at, status, appointment_type')
-          .in('pet_id', petIdsArray),
+          .from('visits')
+          .select('id, pet_id, visited_at, next_visit_date, reason, signed_by')
+          .in('pet_id', petIdsArray)
+          .not('next_visit_date', 'is', null),
       ])
 
-      if (medsResult.error)  console.warn('[useCalendarEvents][medications]',  medsResult.error.message)
-      if (apptsResult.error) console.warn('[useCalendarEvents][appointments]', apptsResult.error.message)
+      if (medsResult.error)      console.warn('[useCalendarEvents][visit_medications]', medsResult.error.message)
+      if (remindersResult.error) console.warn('[useCalendarEvents][reminders]',      remindersResult.error.message)
+      if (visitsResult.error)    console.warn('[useCalendarEvents][visits]',         visitsResult.error.message)
 
-      const meds  = medsResult.data  || []
-      const appts = apptsResult.data || []
+      const meds      = medsResult.data      || []
+      const reminders  = remindersResult.data || []
+      const visits     = visitsResult.data    || []
 
       const medEvents = []
       meds.forEach(m => {
@@ -88,7 +93,7 @@ export function useCalendarEvents(month, year, petIds, refreshKey = 0) {
           medEvents.push({
             id:          `${m.id}-${current}`,
             sourceId:    m.id,
-            sourceTable: 'medications',
+            sourceTable: 'visit_medications',
             petId:       m.pet_id,
             title:       m.name,
             date:        current,
@@ -96,31 +101,46 @@ export function useCalendarEvents(month, year, petIds, refreshKey = 0) {
             frequency:   m.frequency,
             dosage:      m.dosage,
             active:      m.active,
-            status:      m.active ? 'active' : 'inactive',
+            status:      'active',
           })
           current = addDays(current, 1)
         }
       })
 
-      const apptEvents = appts
-        .map(a => ({
-          id:              a.id,
-          sourceId:        a.id,
-          sourceTable:     'appointments',
-          petId:           a.pet_id,
-          title:           a.title,
-          date:            a.scheduled_at ? a.scheduled_at.split('T')[0] : null,
-          type:            'visita',
-          appointmentType: a.appointment_type,
-          status:          a.status,
+      const reminderEvents = reminders
+        .filter(r => r.due_date && r.due_date >= startDate && r.due_date <= endDate)
+        .map(r => ({
+          id:          r.id,
+          sourceId:    r.id,
+          sourceTable: 'reminders',
+          petId:       r.pet_id,
+          title:       r.title,
+          date:        r.due_date,
+          type:        r.type || 'recordatorio',
+          notes:       r.notes,
+          completed:   r.completed,
+          status:      r.completed ? 'completed' : 'pending',
         }))
-        .filter(e => e.date && e.date >= startDate && e.date <= endDate)
 
-      setEvents([...medEvents, ...apptEvents])
+      const visitEvents = visits
+        .filter(v => v.next_visit_date && v.next_visit_date >= startDate && v.next_visit_date <= endDate)
+        .map(v => ({
+          id:          v.id,
+          sourceId:    v.id,
+          sourceTable: 'visits',
+          petId:       v.pet_id,
+          title:       v.reason ? `Visita: ${v.reason}` : 'Próxima visita',
+          date:        v.next_visit_date,
+          type:        'visita',
+          signed_by:   v.signed_by,
+          status:      'scheduled',
+        }))
+
+      setEvents([...medEvents, ...reminderEvents, ...visitEvents])
     }
 
     load()
-  }, [month, year, petIdsKey, refreshKey]) // ✅ petIdsKey string en lugar de petIds array
+  }, [month, year, petIdsKey, refreshKey])
 
   return events
 }

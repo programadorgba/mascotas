@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { HeartPulse, LogOut, Moon, PawPrint, Search, Sun, Trash2 } from 'lucide-react'
+import { LogOut, Moon, PawPrint, Search, Sun, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 
@@ -40,7 +40,7 @@ export function AppShell({ area }) {
     <div className="app-shell">
       <header className="topbar">
         <Link className="brand" to={isVet ? '/veterinario' : '/mascotas'}>
-          <span className="brand-mark"><HeartPulse size={22} /></span>
+          <img className="brand-mark" src="/android-chrome-192x192.png" alt="PetCare" width="36" height="36" />
           <span>
             <strong>PetCare</strong>
             <small>{isVet ? 'Portal clinico' : 'Salud de mascotas'}</small>

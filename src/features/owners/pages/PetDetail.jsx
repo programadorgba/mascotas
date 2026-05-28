@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  Activity,
   Bug,
-  FileText,
-  FlaskConical,
   ImagePlus,
   Pill,
   Ruler,
   Scale,
-  Scissors,
-  ShieldPlus,
   Stethoscope,
   Trash2,
   X
@@ -181,47 +176,77 @@ export default function PetDetail() {
 
   return (
     <main className="page">
-      <header className="pet-profile">
-        <div className="pet-photo large">
-          {pet.photoSignedUrl
-            ? <img src={pet.photoSignedUrl} alt={pet.name} />
-            : <Stethoscope size={44} />}
-        </div>
-        <div>
-          <span className="eyebrow">{pet.animal_type}</span>
-          <h1>{pet.name}</h1>
-          <div className="pet-info-mobile">
-            <div className="info-row"><strong>Sexo:</strong>      <span>{pet.sex             || 'No especificado'}</span></div>
-            <div className="info-row"><strong>Raza:</strong>      <span>{pet.breed           || 'No indicada'}</span></div>
-            <div className="info-row"><strong>Nº Chip:</strong>   <span>{pet.chip_number     || 'Sin chip'}</span></div>
-            <div className="info-row"><strong>Compañía:</strong>  <span>{pet.insurance_company || 'No indicada'}</span></div>
-            <div className="info-row"><strong>Nº Póliza:</strong> <span>{pet.policy_number   || 'No indicada'}</span></div>
+      <div className="pet-detail-layout">
+        <section className="pet-info-card">
+          <div className="pet-info-header">
+            <div className="pet-info-photo">
+              {pet.photoSignedUrl
+                ? <img src={pet.photoSignedUrl} alt={pet.name} />
+                : <Stethoscope size={44} />}
+            </div>
+            <div className="pet-info-content">
+              <span className="eyebrow">{pet.animal_type}</span>
+              <h1>{pet.name}</h1>
+              <p className="pet-breed">{pet.breed || 'Raza no indicada'}</p>
+            </div>
           </div>
-        </div>
-        <button className="danger-button pet-delete-button" type="button" onClick={handleDeletePet}>
-          <Trash2 size={18} />
-          Borrar mascota
-        </button>
-      </header>
+          <div className="pet-info-grid">
+            <div className="info-item">
+              <span className="info-label">Sexo</span>
+              <span className="info-value">{pet.sex || 'No especificado'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Fecha nacimiento</span>
+              <span className="info-value">{pet.birth_date ? formatDate(pet.birth_date) : 'No indicada'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Nº Chip</span>
+              <span className="info-value">{pet.chip_number || 'Sin chip'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Compañía</span>
+              <span className="info-value">{pet.insurance_company || 'No indicada'}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Nº Póliza</span>
+              <span className="info-value">{pet.policy_number || 'No indicada'}</span>
+            </div>
+          </div>
+          <div className="pet-info-actions">
+            <button className="danger-button" type="button" onClick={handleDeletePet}>
+              <Trash2 size={18} />
+              Borrar
+            </button>
+          </div>
+        </section>
 
-      <section className="pet-summary-grid">
-        <article className="summary-card">
-          <span>Sexo</span>
-          <strong>{pet.sex || 'No especificado'}</strong>
-        </article>
-        <article className="summary-card">
-          <span>Fecha de nacimiento</span>
-          <strong>{pet.birth_date ? formatDate(pet.birth_date) : 'No indicada'}</strong>
-        </article>
-        <article className="summary-card">
-          <span>Color</span>
-          <strong>{pet.color || 'No indicado'}</strong>
-        </article>
-        <article className="summary-card">
-          <span>Alergias</span>
-          <strong className="error-text">{pet.allergies || 'Ninguna'}</strong>
-        </article>
-      </section>
+        <section className="pet-vitals-card">
+          <h3>Datos actuales</h3>
+          <div className="vitals-grid">
+            <div className="vital-item">
+              <Scale size={20} />
+              <div>
+                <span className="vital-label">Peso</span>
+                <span className="vital-value">{visits[0]?.weight_kg ? `${visits[0].weight_kg} kg` : '—'}</span>
+              </div>
+            </div>
+            <div className="vital-item">
+              <Ruler size={20} />
+              <div>
+                <span className="vital-label">Altura</span>
+                <span className="vital-value">{visits[0]?.height_cm ? `${visits[0].height_cm} cm` : '—'}</span>
+              </div>
+            </div>
+            <div className="vital-item allergies">
+              <Bug size={20} />
+              <div>
+                <span className="vital-label">Alergias</span>
+                <span className="vital-value">{pet.allergies || 'Ninguna'}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
 
       <section className="records-list">
         <h2>Historial de Visitas</h2>

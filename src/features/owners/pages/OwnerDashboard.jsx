@@ -31,8 +31,6 @@ export default function OwnerDashboard() {
     <main className="page">
       <header className="page-header">
         <div>
-          <span style={{color: 'var(--text)', fontSize: '1.5rem', fontWeight: 700}}>{profile?.full_name || 'Propietario'}</span>
-          <h1>Mis mascotas</h1>
           <p>Fichas privadas con datos de identificacion, seguro y salud.</p>
         </div>
         <Link className="primary-button" to="/mascotas/nueva"><Plus size={18} /> Nueva mascota</Link>

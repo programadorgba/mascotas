@@ -92,7 +92,7 @@ export default function CalendarGrid({ month, year, events, pets, onMonthChange,
               {dayEvents.length > 0 && (
                 <div className="day-dots">
                   {[...new Map(dayEvents.map(e => [e.petId, e])).values()].map(event => (
-                    <EventDot key={event.id} color={petColorMap[event.petId] || '#ccc'} size={10} />
+                    <EventDot key={event.id} color={petColorMap[event.petId] || '#ccc'} size={20} />
                   ))}
                 </div>
               )}
